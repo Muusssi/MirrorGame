@@ -1,7 +1,7 @@
 
-const MIRROR_DIAM = 20;
+const isMobile = navigator.userAgentData.mobile;
 
-
+var mirror_diam = 40;
 var camera_offset_x = 0;
 var camera_offset_y = 0;
 var mirrors = [];
@@ -15,11 +15,11 @@ var player_y = 0;
 function generate_mirrors(mirror_count) {
   mirrors = [];
   while (mirror_count > mirrors.length) {
-    let diam = random(2*MIRROR_DIAM, min(height, width)/2);
+    let diam = random(2*mirror_diam, min(height, width)/2);
     let angle = random(0, 2*3.141);
     let new_mirror = {'x': cos(angle)*diam, 'y': sin(angle)*diam};
     for (const mirror of mirrors) {
-      if (dist(mirror.x, mirror.y, new_mirror.x, new_mirror.y) < 2*MIRROR_DIAM) {
+      if (dist(mirror.x, mirror.y, new_mirror.x, new_mirror.y) < 2*mirror_diam) {
         new_mirror = null;
         break;
       }
@@ -34,7 +34,7 @@ function pointed_mirror() {
   for (const mirror of mirrors) {
     if (dist(mirror.x, mirror.y,
              mouseX - width/2 - camera_offset_x,
-             mouseY - height/2 - camera_offset_y) <= MIRROR_DIAM) {
+             mouseY - height/2 - camera_offset_y) <= mirror_diam) {
       return mirror;
     }
   }
@@ -50,21 +50,22 @@ function draw_mirrors() {
   for (const mirror of mirrors) {
     push();
     if (mirror == selected_mirror) {
-      fill(50);
+      fill(100);
     }
-    ellipse(mirror.x, mirror.y, 2*MIRROR_DIAM, 2*MIRROR_DIAM);
+    ellipse(mirror.x, mirror.y, 2*mirror_diam, 2*mirror_diam);
     pop();
   }
 }
 
 function draw_player() {
   push();
+  fill(200, 0, 0);
   rectMode(CENTER);
-  rect(player_x, player_y, MIRROR_DIAM, MIRROR_DIAM);
+  rect(player_x, player_y, mirror_diam, mirror_diam);
   if (selected_mirror != null) {
     noFill();
     let reflection = reflexion_point(selected_mirror)
-    rect(reflection.x, reflection.y, MIRROR_DIAM, MIRROR_DIAM);
+    rect(reflection.x, reflection.y, mirror_diam, mirror_diam);
     line(player_x, player_y, reflection.x, reflection.y);
   }
   pop();
@@ -73,11 +74,15 @@ function draw_player() {
 
 function setup() {
   createCanvas(windowWidth, windowHeight);
+  mirror_diam = max(windowWidth, windowHeight)/100;
   generate_mirrors(10);
 }
 
 function draw() {
   background(220);
+  if (!isMobile) {
+    selected_mirror = pointed_mirror();
+  }
   translate(width/2 + camera_offset_x, height/2 + camera_offset_y);
   draw_mirrors();
   draw_player();
@@ -89,22 +94,33 @@ function keyPressed() {
 }
 
 function mousePressed() {
-  selected_mirror = pointed_mirror();
+  let mirror_pointed = pointed_mirror();
+  if (isMobile) {
+    selected_mirror = mirror_pointed;
+  }
+  else {
+    if (mirror_pointed != null) {
+      jump();
+    }
+
+  }
+}
+
+function jump(argument) {
+  let reflection = reflexion_point(selected_mirror);
+  player_x = reflection.x;
+  player_y = reflection.y;
+  selected_mirror = null;
 }
 
 function doubleClicked() {
-  if (selected_mirror != null) {
-    let reflection = reflexion_point(selected_mirror);
-    player_x = reflection.x;
-    player_y = reflection.y;
-    selected_mirror = null;
-  }
-
   return false;
 }
 
 
 function mouseDragged(event) {
-  //console.log(event);
+  if (isMobile && selected_mirror != null) {
+    jump()
+  }
   return false;
 }
