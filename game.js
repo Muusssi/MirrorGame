@@ -136,7 +136,7 @@ function draw_player() {
 
 function setup() {
   createCanvas(windowWidth, windowHeight);
-  mirror_diam = max(windowWidth, windowHeight)/100;
+  mirror_diam = max(windowWidth, windowHeight)/50;
   generate_mirrors(10);
 }
 
