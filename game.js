@@ -165,7 +165,6 @@ function mousePressed() {
     if (mirror_pointed != null) {
       jump();
     }
-
   }
 }
 
@@ -191,4 +190,13 @@ function mouseDragged(event) {
 
 function touchStarted() {
   touch_device = true;
+  let mirror_pointed = pointed_mirror();
+  if (touch_device) {
+    selected_mirror = mirror_pointed;
+  }
+  else {
+    if (mirror_pointed != null) {
+      jump();
+    }
+  }
 }
